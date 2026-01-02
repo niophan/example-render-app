@@ -1,6 +1,10 @@
+require('dotenv').config()
 const express = require('express')
 // const cors = require('cors')
+// const mongoose = require('mongoose')
+const Note = require('./models/note')
 const app = express()
+
 
 let notes = [
   {
@@ -33,13 +37,15 @@ app.use(express.json())
 app.use(requestLogger)
 app.use(express.static('dist'))
 
+
 app.get('/', (request, response) => {
   response.send('<h1>Hello 22World!</h1>')
 })
 
 app.get('/api/notes', (request, response) => {
-  response.json(notes)
-
+  Note.find({}).then(notes => {
+      response.json(notes)
+  })
 })
 
 app.get('/api/notes/:id', (request, response) => {
