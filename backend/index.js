@@ -49,17 +49,14 @@ app.get('/api/notes', (request, response) => {
 })
 
 app.get('/api/notes/:id', (request, response) => {
-  const id = request.params.id
-  const note = notes.find(note => note.id === id)
-  const myHeader = request.get('Content-Type'); // case insensitive
-  console.log('My-Header value:', myHeader);
-
-  if (note) {
-    response.json(note)
-  } else {
-    response.statusMessage = "Current page does not work";
-    response.status(404).end()
-  }
+  Note.findById(request.params.id).then(note => {
+    if (note) {
+      response.json(note)
+    } else {
+      response.statusMessage = "Current page does not work";
+      response.status(404).end()
+    }
+  })
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -68,13 +65,6 @@ app.delete('/api/notes/:id', (request, response) => {
 
   response.status(204).end()
 })
-
-const generateId = () => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => Number(n.id)))
-    : 0
-  return String(maxId + 1)
-}
 
 app.post('/api/notes', (request, response) => {
   const body = request.body
@@ -85,18 +75,14 @@ app.post('/api/notes', (request, response) => {
     })
   }
 
-  const note = {
-    id: generateId(),
+  const note = new Note({
     content: body.content,
     important: body.important || false
-  }
+  })
 
-  notes = notes.concat(note)
-  response.json(note)
-
-  const myHeader = request.get('Content-Type'); // case insensitive
-  console.log('My-Header value:', myHeader);
-  console.log(request.headers)
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
 }) 
 
 const unknownEndpoint = (request, response) => {
